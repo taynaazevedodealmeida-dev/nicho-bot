@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nicho-bot — Construtor de Chatbot por Nicho</title>
+<style>
+:root{
+  --bg:#0f0a1e; --bg2:#160f2e; --card:#1c1438; --card2:#241a47;
+  --border:#352a5c; --txt:#e8e3f5; --txt2:#a99fc9; --muted:#7a6fa0;
+  --accent:#8b5cf6; --accent2:#a78bfa; --accent-d:#6d28d9;
+  --wa-bg:#0c1518; --wa-panel:#111b1f; --wa-bot:#1f2c34; --wa-user:#6d28d9;
+  --green:#22c55e; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--txt);min-height:100vh;padding:24px}
+a{color:var(--accent2)}
+h1,h2,h3{font-weight:700;letter-spacing:-.02em}
+.wrap{max-width:1280px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;margin-bottom:28px;flex-wrap:wrap}
+.logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-d));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 8px 24px rgba(139,92,246,.35)}
+.brand h1{font-size:22px}
+.brand p{color:var(--txt2);font-size:13px}
+.tag{margin-left:auto;background:var(--card2);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--txt2)}
+.grid{display:grid;grid-template-columns:1fr 1.1fr 380px;gap:20px;align-items:start}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card h2{font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 .n{width:22px;height:22px;border-radius:7px;background:var(--accent-d);display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+label{display:block;font-size:12px;color:var(--txt2);margin:12px 0 5px}
+select,input,textarea,button{font-family:inherit;font-size:14px}
+select,input,textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--txt);padding:10px 12px;border-radius:10px;outline:none;transition:border .15s}
+select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:60px}
+button{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-weight:600;transition:.15s}
+.btn{background:var(--accent);color:#fff}
+.btn:hover{background:var(--accent2)}
+.btn-ghost{background:var(--card2);color:var(--txt);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent)}
+.btn-sm{padding:6px 10px;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1}
+.nichoInfo{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--txt2);margin-top:12px;line-height:1.5}
+/* pares */
+.pair{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.pair .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pair .top span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.del{background:transparent;color:#f87171;padding:2px 8px;font-size:18px;line-height:1}
+.pair input,.pair textarea{font-size:13px;padding:8px 10px}
+/* phone */
+.phoneWrap{position:sticky;top:24px}
+.phone{background:#000;border-radius:34px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);max-width:360px;margin:0 auto}
+.screen{background:var(--wa-bg);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;height:600px}
+.wa-head{background:var(--wa-panel);padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1a262c}
+.wa-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-d));display:flex;align-items:center;justify-content:center;font-size:18px}
+.wa-head .nm{font-size:14px;font-weight:600}
+.wa-head .st{font-size:11px;color:var(--green)}
+.chat{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(var(--wa-bg),var(--wa-bg))}
+.bubble{max-width:80%;padding:9px 12px;border-radius:12px;font-size:13.5px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;animation:pop .2s}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.bot{background:var(--wa-bot);align-self:flex-start;border-top-left-radius:3px}
+.user{background:var(--wa-user);color:#fff;align-self:flex-end;border-top-right-radius:3px}
+.bubble .t{font-size:9px;color:var(--txt2);display:block;text-align:right;margin-top:3px}
+.wa-input{background:var(--wa-panel);padding:10px;display:flex;gap:8px;border-top:1px solid #1a262c}
+.wa-input input{border-radius:20px;background:var(--wa-bg);border:1px solid #1a262c}
+.wa-input button{background:var(--accent);width:42px;border-radius:50%;flex:none;font-size:16px}
+.lead{background:var(--card2);border:1px solid var(--green);border-radius:10px;padding:12px;margin-top:14px;font-size:13px;display:none}
+.lead.show{display:block}
+.lead h3{font-size:13px;color:var(--green);margin-bottom:6px}
+.lead div{color:var(--txt2);margin:2px 0}
+.exportRow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.exportRow button{flex:1;min-width:130px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--accent-d);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;transition:.3s;z-index:99}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🤖</div>
+    <div class="brand"><h1>nicho-bot</h1><p>Construtor + simulador de chatbot de WhatsApp por nicho</p></div>
+    <div class="tag">MVP · 100% client-side · sem servidor</div>
+  </header>
+
+  <div class="grid">
+    <!-- COL 1: CONFIG -->
+    <div class="card">
+      <h2><span class="n">1</span> Nicho do negócio</h2>
+      <label>Selecione o segmento (vem pré-treinado)</label>
+      <select id="nicho"></select>
+      <div class="nichoInfo" id="nichoInfo"></div>
+
+      <label style="margin-top:18px">Nome do bot (header do chat)</label>
+      <input id="botName" placeholder="Ex: Atendente Virtual">
+
+      <label>Mensagem de boas-vindas</label>
+      <textarea id="welcome"></textarea>
+
+      <label>Resposta de fallback (quando não entende)</label>
+      <textarea id="fallback"></textarea>
+
+      <button class="btn" style="width:100%;margin-top:16px" onclick="resetNicho()">↻ Recarregar padrão do nicho</button>
+    </div>
+
+    <!-- COL 2: PARES -->
+    <div class="card">
+      <h2><span class="n">2</span> Perguntas e respostas (editável)</h2>
+      <div id="pairs"></div>
+      <button class="btn-ghost" style="width:100%" onclick="addPair()">+ Adicionar pergunta → resposta</button>
+      <p class="hint">Gatilhos: separe palavras-chave por vírgula. O bot casa por palavra-chave. Use <b>{nome}</b> para inserir o nome do cliente.</p>
+
+      <div class="exportRow">
+        <button class="btn" onclick="exportJSON()">⬇ Exportar JSON</button>
+        <button class="btn-ghost" onclick="copyScript()">📋 Copiar roteiro</button>
+      </div>
+    </div>
+
+    <!-- COL 3: SIMULADOR -->
+    <div class="phoneWrap">
+      <div class="phone">
+        <div class="screen">
+          <div class="wa-head">
+            <div class="wa-av">💬</div>
+            <div><div class="nm" id="hdName">Atendente Virtual</div><div class="st">online</div></div>
+          </div>
+          <div class="chat" id="chat"></div>
+          <div class="wa-input">
+            <input id="msg" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')send()">
+            <button onclick="send()">➤</button>
+          </div>
+        </div>
+      </div>
+      <div class="lead" id="leadBox">
+        <h3>✓ Lead capturado</h3>
+        <div id="leadData"></div>
+      </div>
+      <p class="hint" style="text-align:center">Teste digitando: "horário", "preço", "quero agendar". 💜</p>
+    </div>
+  </div>
+
+  <p class="foot">
+    nicho-bot · MVP vendável: monte o bot do nicho do cliente, exporte o JSON e entregue/instale.<br>
+    Roadmap: conectar à WhatsApp Cloud API oficial quando houver receita.
+  </p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====== NICHOS PRÉ-CONFIGURADOS (coração do valor) ====== */
+const NICHOS = {
+  odonto:{
+    nome:"Clínica Odontológica",
+    desc:"Tom acolhedor e profissional. Pré-treinado para tirar dúvidas de procedimentos, valores e marcar avaliação.",
+    botName:"Sorriso · Atendimento",
+    welcome:"Olá! 😁 Bem-vindo(a) à nossa clínica odontológica. Posso te ajudar com horários, valores de procedimentos ou agendar sua avaliação. O que você precisa?",
+    fallback:"Não tenho certeza se entendi. Posso te ajudar com: *valores*, *horário de funcionamento* ou *agendar uma avaliação*. Quer que eu chame um atendente?",
+    pairs:[
+      {k:"horario, funcionamento, aberto, atende",r:"Atendemos de segunda a sexta, das 8h às 19h, e sábados das 8h às 13h. 🦷"},
+      {k:"preco, valor, quanto custa, valores",r:"A primeira avaliação é gratuita! 🎉 Limpeza a partir de R$120 e clareamento a partir de R$650. Quer agendar sua avaliação sem custo?"},
+      {k:"clareamento",r:"Nosso clareamento a laser deixa o sorriso até 4 tons mais branco em 1 sessão, a partir de R$650. Posso agendar uma avaliação?"},
+      {k:"implante, dente, faltando",r:"Trabalhamos com implantes com garantia e parcelamento em até 12x. O ideal é uma avaliação presencial. Quer agendar?"},
+      {k:"convenio, plano",r:"Atendemos os principais convênios odontológicos e também particular com condições especiais. Qual é o seu convênio?"},
+      {k:"endereco, onde fica, local",r:"Ficamos na Av. Central, 1020 - sala 305. Tem estacionamento no prédio. 📍"}
+    ]
+  },
+  estetica:{
+    nome:"Salão / Estética",
+    desc:"Tom leve, próximo e vendedor. Foco em procedimentos estéticos, pacotes e agendamento rápido.",
+    botName:"Studio Beauty 💅",
+    welcome:"Oii, tudo bem? 💕 Aqui é do nosso studio de beleza! Posso te passar valores, horários ou já agendar seu horário. Como posso te ajudar?",
+    fallback:"Hmm, não entendi direitinho 😅 Posso te ajudar com *serviços*, *valores* ou *agendar horário*. Quer falar com a recepção?",
+    pairs:[
+      {k:"horario, funcionamento, aberto",r:"Funcionamos de terça a sábado, das 9h às 20h. ✨"},
+      {k:"preco, valor, quanto, valores, tabela",r:"Alguns valores: Cabelo (corte) a partir de R$60, Manicure R$45, Design de sobrancelha R$50, Limpeza de pele R$120. Quer agendar? 💖"},
+      {k:"cabelo, corte, escova, progressiva",r:"Fazemos corte, escova, coloração e progressiva sem formol. Posso te encaixar essa semana, quer?"},
+      {k:"unha, manicure, pedicure, gel",r:"Temos manicure, pedicure e alongamento em gel a partir de R$90. Quer agendar?"},
+      {k:"sobrancelha, design, henna",r:"Design de sobrancelha com henna por R$60. Fica lindo! 😍 Quer marcar?"},
+      {k:"pacote, combo, promocao",r:"Temos pacote dia da noiva e combos mensais com até 20% off. Quer que eu te mande os detalhes?"}
+    ]
+  },
+  advocacia:{
+    nome:"Advocacia",
+    desc:"Tom formal, confiável e discreto. Triagem de área jurídica e agendamento de consulta.",
+    botName:"Atendimento Jurídico",
+    welcome:"Olá. Seja bem-vindo(a) ao nosso escritório de advocacia. Posso esclarecer dúvidas iniciais e agendar uma consulta com um de nossos advogados. Em qual área você precisa de ajuda?",
+    fallback:"Para te orientar melhor, posso ajudar com: *áreas de atuação*, *honorários* ou *agendar uma consulta*. Deseja falar diretamente com um advogado?",
+    pairs:[
+      {k:"horario, funcionamento, atende",r:"Atendemos de segunda a sexta, das 9h às 18h. Consultas também por videochamada."},
+      {k:"honorario, valor, preco, custa, consulta",r:"A consulta inicial de orientação tem valor de R$200, abatido caso haja contratação. Deseja agendar?"},
+      {k:"trabalhista, demissao, rescisao, fgts",r:"Atuamos em Direito Trabalhista (rescisões, verbas, horas extras). Recomendo uma consulta para análise do seu caso. Posso agendar?"},
+      {k:"divorcio, familia, pensao, guarda",r:"Cuidamos de Direito de Família: divórcio, guarda e pensão, com total sigilo. Quer agendar uma consulta reservada?"},
+      {k:"inss, aposentadoria, beneficio",r:"Atuamos em Direito Previdenciário (aposentadorias e benefícios do INSS). Vamos analisar seu caso em uma consulta?"},
+      {k:"area, atuacao, fazem, casos",r:"Atuamos em: Trabalhista, Família, Previdenciário, Cível e Consumidor. Qual se aplica ao seu caso?"}
+    ]
+  },
+  imobiliaria:{
+    nome:"Imobiliária",
+    desc:"Tom consultivo e ágil. Qualifica o lead (compra/aluguel, perfil) e agenda visita.",
+    botName:"Imob · Corretor Virtual",
+    welcome:"Olá! 🏠 Bem-vindo(a). Posso te ajudar a encontrar imóveis para *comprar* ou *alugar*, passar valores e agendar uma visita. O que você procura?",
+    fallback:"Deixa eu te direcionar: você procura *comprar*, *alugar* ou quer *agendar uma visita*? Posso chamar um corretor também.",
+    pairs:[
+      {k:"alugar, aluguel, locacao",r:"Ótimo! Temos apartamentos e casas para alugar a partir de R$900/mês. Quantos quartos você procura e em qual bairro?"},
+      {k:"comprar, compra, financiamento, venda",r:"Trabalhamos com imóveis à venda e financiamento pela Caixa/bancos. Qual faixa de valor e quantos quartos? 🏡"},
+      {k:"visita, ver, conhecer, agendar",r:"Perfeito, vamos agendar sua visita! Me diga o melhor dia e horário."},
+      {k:"documento, documentacao, fiador",r:"Para locação pedimos RG, CPF, comprovante de renda e garantia (fiador ou seguro-fiança). Posso te enviar a lista completa?"},
+      {k:"bairro, regiao, localizacao",r:"Temos imóveis em diversas regiões da cidade. Qual bairro você prefere? Assim te mostro as melhores opções."},
+      {k:"horario, funcionamento, atende",r:"Atendemos de segunda a sábado, das 9h às 18h. Visitas conforme agendamento. 📅"}
+    ]
+  },
+  restaurante:{
+    nome:"Restaurante / Delivery",
+    desc:"Tom amigável e direto. Cardápio, pedidos, horário e taxa de entrega.",
+    botName:"Cozinha · Pedidos 🍔",
+    welcome:"Fala! 🍕 Bem-vindo(a) ao nosso delivery. Posso te passar o *cardápio*, *horário*, *taxa de entrega* ou anotar seu pedido. Bora?",
+    fallback:"Não saquei 😅 Posso te ajudar com *cardápio*, *taxa de entrega*, *horário* ou *fazer um pedido*. Quer falar com o atendente?",
+    pairs:[
+      {k:"cardapio, menu, comida, pratos",r:"🍔 Burgers a partir de R$22, 🍕 Pizzas a partir de R$39, 🥗 Saladas R$18 e bebidas. Quer que eu te mande o cardápio completo?"},
+      {k:"horario, funcionamento, aberto, ate",r:"Estamos abertos de terça a domingo, das 18h às 23h30. 🌙"},
+      {k:"entrega, taxa, frete, delivery",r:"A taxa de entrega varia de R$5 a R$12 conforme o bairro, e o tempo médio é de 40min. Qual seu bairro?"},
+      {k:"pedido, pedir, quero, comprar",r:"Show! Me diga o que você quer pedir que eu já vou anotando. 📝"},
+      {k:"pagamento, pix, cartao, dinheiro",r:"Aceitamos Pix, cartão na entrega e dinheiro. 💳 Vai querer fazer o pedido?"},
+      {k:"promocao, combo, desconto",r:"Hoje tem combo família (2 burgers + fritas + refri) por R$59! 🤑 Quer pedir?"}
+    ]
+  },
+  generico:{
+    nome:"Genérico (qualquer negócio)",
+    desc:"Base neutra para você adaptar a qualquer segmento. Edite os pares conforme o cliente.",
+    botName:"Atendente Virtual",
+    welcome:"Olá! 👋 Sou o atendente virtual e estou aqui pra te ajudar mesmo fora do horário. Posso te passar informações ou agendar um atendimento. Como posso ajudar?",
+    fallback:"Desculpe, não entendi. Posso te ajudar com *informações*, *horário de atendimento* ou *agendar*. Quer falar com um atendente?",
+    pairs:[
+      {k:"horario, funcionamento, aberto, atende",r:"Nosso horário de atendimento é de segunda a sexta, das 9h às 18h. 🕘"},
+      {k:"preco, valor, quanto, orcamento",r:"Posso te passar um orçamento! Me conta um pouco mais sobre o que você precisa?"},
+      {k:"contato, telefone, falar, atendente",r:"Claro! Posso transferir você para um atendente humano. Enquanto isso, me diz seu nome e telefone?"},
+      {k:"servico, produto, fazem, vendem",r:"Trabalhamos com diversos serviços/produtos. Me diga o que você procura que eu te oriento. 😉"}
+    ]
+  }
+};
+
+const AGENDA_GATILHOS=["agendar","agenda","marcar","horario para","quero marcar","visita","consulta","avaliacao","reservar","pedido","pedir"];
+
+/* ====== ESTADO ====== */
+let cfg=null;
+const LS_KEY="nichobot_cfg_v1";
+
+function loadCfg(){
+  const saved=localStorage.getItem(LS_KEY);
+  if(saved){try{cfg=JSON.parse(saved);return;}catch(e){}}
+  applyNicho("odonto");
+}
+function saveCfg(){localStorage.setItem(LS_KEY,JSON.stringify(cfg));}
+function applyNicho(key){
+  const n=NICHOS[key];
+  cfg={nicho:key,nichoNome:n.nome,botName:n.botName,welcome:n.welcome,fallback:n.fallback,pairs:JSON.parse(JSON.stringify(n.pairs))};
+  saveCfg();
+}
+
+/* ====== RENDER CONFIG ====== */
+function renderConfig(){
+  const sel=document.getElementById("nicho");
+  if(!sel.options.length){
+    for(const k in NICHOS){const o=document.createElement("option");o.value=k;o.textContent=NICHOS[k].nome;sel.appendChild(o);}
+  }
+  sel.value=cfg.nicho;
+  document.getElementById("nichoInfo").textContent=NICHOS[cfg.nicho].desc;
+  document.getElementById("botName").value=cfg.botName;
+  document.getElementById("welcome").value=cfg.welcome;
+  document.getElementById("fallback").value=cfg.fallback;
+  renderPairs();
+  document.getElementById("hdName").textContent=cfg.botName;
+}
+function renderPairs(){
+  const c=document.getElementById("pairs");c.innerHTML="";
+  cfg.pairs.forEach((p,i)=>{
+    const d=document.createElement("div");d.className="pair";
+    d.innerHTML=`<div class="top"><span>Par ${i+1}</span><button class="del" onclick="delPair(${i})">×</button></div>
+      <label>Gatilhos (palavras-chave)</label>
+      <input value="${esc(p.k)}" oninput="cfg.pairs[${i}].k=this.value;saveCfg()">
+      <label>Resposta do bot</label>
+      <textarea oninput="cfg.pairs[${i}].r=this.value;saveCfg()">${esc(p.r)}</textarea>`;
+    c.appendChild(d);
+  });
+}
+function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function addPair(){cfg.pairs.push({k:"nova palavra-chave",r:"Nova resposta do bot."});saveCfg();renderPairs();}
+function delPair(i){cfg.pairs.splice(i,1);saveCfg();renderPairs();}
+function resetNicho(){if(confirm("Recarregar o padrão deste nicho? Suas edições nos pares serão perdidas."))
+  {applyNicho(document.getElementById("nicho").value);renderConfig();startChat();toast("Padrão do nicho recarregado");}}
+
+/* sincronizar campos editáveis */
+["nicho","botName","welcome","fallback"].forEach(id=>{
+  document.addEventListener("input",e=>{
+    if(e.target.id===id){
+      if(id==="nicho"){applyNicho(e.target.value);renderConfig();startChat();toast("Nicho carregado: "+NICHOS[e.target.value].nome);return;}
+      cfg[id]=e.target.value;saveCfg();
+      if(id==="botName")document.getElementById("hdName").textContent=e.target.value;
+    }
+  });
+});
+
+/* ====== SIMULADOR ====== */
+let flow={state:"idle",lead:{},pendingDay:null};
+function startChat(){
+  document.getElementById("chat").innerHTML="";
+  flow={state:"idle",lead:{},pendingDay:null};
+  document.getElementById("leadBox").classList.remove("show");
+  addBubble("bot",cfg.welcome);
+}
+function addBubble(who,txt){
+  const chat=document.getElementById("chat");
+  const b=document.createElement("div");b.className="bubble "+who;
+  const t=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  b.innerHTML=esc(txt)+`<span class="t">${t}</span>`;
+  chat.appendChild(b);chat.scrollTop=chat.scrollHeight;
+}
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");}
+
+function send(){
+  const inp=document.getElementById("msg");
+  const txt=inp.value.trim();if(!txt)return;
+  addBubble("user",txt);inp.value="";
+  setTimeout(()=>botReply(txt),450);
+}
+
+function botReply(txt){
+  const t=norm(txt);
+  /* fluxo de agendamento/captura em andamento */
+  if(flow.state==="askName"){
+    flow.lead.nome=txt;flow.state="askContact";
+    return addBubble("bot",`Prazer, ${txt}! 😊 Pode me passar seu telefone/WhatsApp para confirmarmos?`);
+  }
+  if(flow.state==="askContact"){
+    flow.lead.contato=txt;flow.state="askDay";
+    return addBubble("bot","Perfeito! Qual o melhor *dia* para você? (ex: segunda, 12/06, amanhã)");
+  }
+  if(flow.state==="askDay"){
+    flow.lead.dia=txt;flow.state="askTime";
+    return addBubble("bot","E qual *horário* fica bom? (ex: 14h, 10:30)");
+  }
+  if(flow.state==="askTime"){
+    flow.lead.hora=txt;flow.state="done";
+    showLead();
+    return addBubble("bot",`Tudo certo, ${flow.lead.nome}! ✅ Seu agendamento foi pré-reservado para *${flow.lead.dia} às ${flow.lead.hora}*. Um atendente vai confirmar pelo seu contato. Obrigado! 💜`);
+  }
+  /* detectar intenção de agendar */
+  if(AGENDA_GATILHOS.some(g=>t.includes(norm(g)))){
+    flow.state="askName";
+    return addBubble("bot","Ótimo, vamos agendar! 📅 Para começar, qual é o seu *nome*?");
+  }
+  /* casar com pares por palavra-chave */
+  let best=null,bestScore=0;
+  cfg.pairs.forEach(p=>{
+    const kws=p.k.split(",").map(k=>norm(k.trim())).filter(Boolean);
+    let score=0;kws.forEach(k=>{if(k && t.includes(k))score++;});
+    if(score>bestScore){bestScore=score;best=p;}
+  });
+  if(best&&bestScore>0){
+    return addBubble("bot",best.r.replace(/\{nome\}/g,flow.lead.nome||""));
+  }
+  /* fallback */
+  addBubble("bot",cfg.fallback);
+}
+function showLead(){
+  const box=document.getElementById("leadBox");
+  document.getElementById("leadData").innerHTML=
+    `<div><b>Nome:</b> ${esc(flow.lead.nome||"-")}</div>
+     <div><b>Contato:</b> ${esc(flow.lead.contato||"-")}</div>
+     <div><b>Dia:</b> ${esc(flow.lead.dia||"-")}</div>
+     <div><b>Horário:</b> ${esc(flow.lead.hora||"-")}</div>
+     <div><b>Nicho:</b> ${esc(cfg.nichoNome)}</div>`;
+  box.classList.add("show");
+}
+
+/* ====== EXPORT ====== */
+function exportJSON(){
+  const data=JSON.stringify(cfg,null,2);
+  const blob=new Blob([data],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="nicho-bot-"+cfg.nicho+".json";
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+  toast("JSON exportado ✅");
+}
+function copyScript(){
+  let s=`=== ROTEIRO DO BOT: ${cfg.nichoNome} ===\n\n`;
+  s+=`Nome do bot: ${cfg.botName}\n\n`;
+  s+=`[BOAS-VINDAS]\n${cfg.welcome}\n\n`;
+  s+=`[FLUXO DE PERGUNTAS E RESPOSTAS]\n`;
+  cfg.pairs.forEach((p,i)=>{s+=`\n${i+1}) Se o cliente mencionar: ${p.k}\n   → Bot responde: ${p.r}\n`;});
+  s+=`\n[FLUXO DE AGENDAMENTO]\nGatilhos: ${AGENDA_GATILHOS.join(", ")}\n`;
+  s+=`1. Bot pergunta o NOME do cliente\n2. Bot pergunta o CONTATO (telefone/WhatsApp)\n3. Bot pergunta o DIA\n4. Bot pergunta o HORÁRIO\n5. Bot confirma e registra o LEAD\n\n`;
+  s+=`[FALLBACK — quando não entende]\n${cfg.fallback}\n`;
+  navigator.clipboard.writeText(s).then(()=>toast("Roteiro copiado 📋")).catch(()=>{
+    /* fallback de cópia */
+    const ta=document.createElement("textarea");ta.value=s;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Roteiro copiado 📋");}catch(e){toast("Não foi possível copiar");}
+    ta.remove();
+  });
+}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ====== INIT ====== */
+loadCfg();renderConfig();startChat();
+</script>
+</body>
+</html>
